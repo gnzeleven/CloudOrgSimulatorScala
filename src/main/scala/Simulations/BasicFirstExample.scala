@@ -66,9 +66,9 @@ object BasicFirstExample {
       );
 
       host
-      .setRamProvisioner(new ResourceProvisionerSimple())
-      .setBwProvisioner(new ResourceProvisionerSimple())
-      .setVmScheduler(new VmSchedulerTimeShared());
+        .setRamProvisioner(new ResourceProvisionerSimple())
+        .setBwProvisioner(new ResourceProvisionerSimple())
+        .setVmScheduler(new VmSchedulerTimeShared());
 
       return host;
     }
