@@ -24,6 +24,8 @@ import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
 class BasicFirstExample
+
+/** Factory for [[Simulations.BasicFirstExample]] instances. */
 object BasicFirstExample {
   val config = ObtainConfigReference("cloudSimulator2") match {
     case Some(value) => value
@@ -31,6 +33,12 @@ object BasicFirstExample {
   }
   val logger = CreateLogger(classOf[BasicFirstExample])
 
+  /** Method to start BasicFirstExample
+   * It is just the same as the cloudsimplus' BasicFirstExample.java
+   * Created this to learn Scala and play around with Cloudsimplus
+   * @param sim_title The title of the simulation
+   * @return Unit
+   */
   def Start() =
     val simulation:CloudSim = new CloudSim();
     val broker0:DatacenterBroker = new DatacenterBrokerSimple(simulation);
@@ -39,11 +47,11 @@ object BasicFirstExample {
       val vmList = new ListBuffer[Vm];
       for (i <- 1 to config.getInt("cloudSimulator2.vm.num")) {
         vmList += new VmSimple(
-          config.getInt("cloudSimulator2.vm.mipsCapacity"),
+          config.getInt("cloudSimulator2.vm.mips"),
           config.getInt("cloudSimulator2.vm.PEs")
-        ).setRam(config.getInt("cloudSimulator2.vm.RAMInMBs"))
+        ).setRam(config.getInt("cloudSimulator2.vm.RAMInMB"))
           .setBw(config.getInt("cloudSimulator2.vm.BandwidthInMBps"))
-          .setSize(config.getInt("cloudSimulator2.vm.StorageInMBs"))
+          .setSize(config.getInt("cloudSimulator2.vm.StorageInMB"))
           .setCloudletScheduler(new CloudletSchedulerSpaceShared());
       }
       return vmList.toList;
@@ -52,16 +60,16 @@ object BasicFirstExample {
     def createHost() : HostSimple = {
       val peList = new ListBuffer[Pe];
       for (i <- 1 to config.getInt("cloudSimulator2.host.PEs")) {
-        peList += new PeSimple(config.getInt("cloudSimulator2.host.mipsCapacity"));
+        peList += new PeSimple(config.getInt("cloudSimulator2.host.mips"));
       }
 
       val ramProvisioner = new ResourceProvisionerSimple();
       val bwProvisioner = new ResourceProvisionerSimple();
 
       val host = HostSimple(
-        config.getInt("cloudSimulator2.host.RAMInMBs"),
+        config.getInt("cloudSimulator2.host.RAMInMB"),
         config.getInt("cloudSimulator2.host.BandwidthInMBps"),
-        config.getInt("cloudSimulator2.host.StorageInMBs"),
+        config.getInt("cloudSimulator2.host.StorageInMB"),
         peList.toList.asJava
       );
 

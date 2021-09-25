@@ -13,6 +13,7 @@ import org.cloudbus.cloudsim.datacenters.DatacenterSimple
 import org.cloudbus.cloudsim.datacenters.network.NetworkDatacenter
 import org.cloudbus.cloudsim.hosts.Host
 import org.cloudbus.cloudsim.hosts.HostSimple
+import org.cloudbus.cloudsim.network.topologies.{BriteNetworkTopology, NetworkTopology}
 import org.cloudbus.cloudsim.provisioners.{PeProvisionerSimple, ResourceProvisioner, ResourceProvisionerSimple}
 import org.cloudbus.cloudsim.resources.Pe
 import org.cloudbus.cloudsim.resources.PeSimple
@@ -26,6 +27,8 @@ import scala.collection.JavaConverters.*
 import scala.collection.mutable.ListBuffer
 
 class Simulation1
+
+/** Factory for [[Simulations.Simulation1]] instances. */
 object Simulation1 {
   // get the config
   val config = ObtainConfigReference("simulation1") match {
@@ -36,43 +39,50 @@ object Simulation1 {
   val logger = CreateLogger(classOf[Simulation1])
 
   // create a simulation object
-  val simulation : CloudSim = new CloudSim();
+  val simulation: CloudSim = new CloudSim();
 
-  /*
-  * Recursively create datacenters
-  * createDatacenters() -> dcRecursive() -> createDatacenter() -> hostRecursive() -> peRecursive()
-  */
-  // create datacenters
-  def createDatacenters(num_dc : Int) : List[DatacenterSimple] = {
+  /** Create a list of datacenters by recursion
+   * @param num_dc Number of datacenters to be created
+   * @return dcList List[DatacenterSimple]
+   */
+  def createDatacenters(num_dc: Int): List[DatacenterSimple] = {
     val dcList = new ListBuffer[DatacenterSimple]
     dcRecursive(num_dc, 0, dcList)
     return dcList.toList
   }
 
-  // Recursively create datacenters
-  def dcRecursive(num_dc : Int, dc_id : Int, dcList : ListBuffer[DatacenterSimple]) : Unit = {
+  /** Function that recursively creates one datacenter
+   * @param num_dc Number of datacenters to be created
+   * @param dc_id id of current datacenter
+   * @param dcList ListBuffer[DatacenterSimple]
+   * @return Unit
+   */
+  def dcRecursive(num_dc: Int, dc_id: Int, dcList: ListBuffer[DatacenterSimple]): Unit = {
     if (num_dc == 0) {
       return
     }
     val dc = createDatacenter(dc_id)
     dcList += dc
-    dcRecursive(num_dc-1, dc_id+1, dcList)
+    dcRecursive(num_dc - 1, dc_id + 1, dcList)
   }
 
-  // Create a single datacenter
-  def createDatacenter(dc_id: Int) : DatacenterSimple = {
+  /** Function that creates one datacenter
+   * @param dc_id id of current datacenter
+   * @return dc DatacenterSimple
+   */
+  def createDatacenter(dc_id: Int): DatacenterSimple = {
     val hostList = new ListBuffer[Host]
-    val num_hosts = config.getInt("simulation1.dc."+dc_id+".numHost")
+    val num_hosts = config.getInt("simulation1.dc." + dc_id + ".numHost")
     logger.info("HOSTS: " + num_hosts)
     hostRecursive(num_hosts, dc_id, hostList)
 
-    val architecture = config.getString("simulation1.dc."+dc_id+".arch")
-    val os = config.getString("simulation1.dc."+dc_id+".os")
-    val vmm = config.getString("simulation1.dc."+dc_id+".vmm")
-    val cost = config.getDouble("simulation1.dc."+dc_id+".costPerSecond")
-    val costRAM = config.getDouble("simulation1.dc."+dc_id+".costRAM")
-    val costStorage = config.getDouble("simulation1.dc."+dc_id+".costStorage")
-    val costBw = config.getDouble("simulation1.dc."+dc_id+".costBw")
+    val architecture = config.getString("simulation1.dc." + dc_id + ".arch")
+    val os = config.getString("simulation1.dc." + dc_id + ".os")
+    val vmm = config.getString("simulation1.dc." + dc_id + ".vmm")
+    val cost = config.getDouble("simulation1.dc." + dc_id + ".costPerSecond")
+    val costRAM = config.getDouble("simulation1.dc." + dc_id + ".costRAM")
+    val costStorage = config.getDouble("simulation1.dc." + dc_id + ".costStorage")
+    val costBw = config.getDouble("simulation1.dc." + dc_id + ".costBw")
 
     val dc = new DatacenterSimple(simulation, hostList.asJava, new VmAllocationPolicySimple())
     dc.getId
@@ -87,8 +97,13 @@ object Simulation1 {
     return dc
   }
 
-  // recursively create hosts
-  def hostRecursive(num_hosts: Int, dc_id: Int, hostList: ListBuffer[Host]) : Unit = {
+  /** Function that recursively creates one datacenter
+   * @param num_hosts Number of hosts to be created
+   * @param dc_id id of current host
+   * @param hostList ListBuffer[Host]
+   * @return Unit
+   */
+  def hostRecursive(num_hosts: Int, dc_id: Int, hostList: ListBuffer[Host]): Unit = {
     if (num_hosts == 0) {
       return
     }
@@ -103,7 +118,7 @@ object Simulation1 {
     val storage = config.getInt("simulation1.host.StorageInMB")
     val bw = config.getInt("simulation1.host.BandwidthInMBps")
 
-    val host : HostSimple = new HostSimple(
+    val host: HostSimple = new HostSimple(
       ram,
       bw,
       storage,
@@ -115,27 +130,41 @@ object Simulation1 {
       .setVmScheduler(new VmSchedulerTimeShared())
 
     hostList += host
-    hostRecursive(num_hosts-1, dc_id+1, hostList)
+    hostRecursive(num_hosts - 1, dc_id + 1, hostList)
   }
 
-  // recursively create Processing Entities
-  def peRecursive(num_pe: Int, pe_id: Int, mips: Int, peList: ListBuffer[Pe]) : Unit = {
-    if (num_pe == 0 ) {
+  /** Function that recursively creates one datacenter
+   * @param num_pe Number of PEs to be created
+   * @param pe_id id of current PE
+   * @param mips MIPS for the current PE
+   * @param peList ListBuffer[Host]
+   * @return Unit
+   */
+  def peRecursive(num_pe: Int, pe_id: Int, mips: Int, peList: ListBuffer[Pe]): Unit = {
+    if (num_pe == 0) {
       return
     }
     peList += new PeSimple(pe_id, mips, new PeProvisionerSimple())
-    peRecursive(num_pe-1, pe_id+1, mips, peList)
+    peRecursive(num_pe - 1, pe_id + 1, mips, peList)
   }
 
-  // create vm list
-  def createVms(num_vm : Int): List[Vm] = {
+  /** Create a list of VMs by recursion
+   * @param num_vm Number of VMs to be created
+   * @return vmList List[Vm]
+   */
+  def createVms(num_vm: Int): List[Vm] = {
     val vmList = new ListBuffer[Vm];
     vmRecursive(num_vm, 0, vmList)
     return vmList.toList;
   }
 
-  // recursively add vm to vmList
-  def vmRecursive(num_vm: Int, vm_id: Int, vmList: ListBuffer[Vm]) : Unit = {
+  /** Function that recursively creates one VM
+   * @param num_vm Number of VMs to be created
+   * @param vm_id id of current Vm
+   * @param vmList ListBuffer[Vm]]=
+   * @return Unit
+   */
+  def vmRecursive(num_vm: Int, vm_id: Int, vmList: ListBuffer[Vm]): Unit = {
     if (num_vm == 0) {
       return
     }
@@ -154,18 +183,26 @@ object Simulation1 {
       .setCloudletScheduler(new CloudletSchedulerTimeShared())
 
     vmList += vm
-    vmRecursive(num_vm-1, vm_id+1, vmList)
+    vmRecursive(num_vm - 1, vm_id + 1, vmList)
   }
 
-  // create cloudlets
-  def createCloudlets(num_cloudlet: Int) : List[Cloudlet] = {
+  /** Create a list of cloudlets by recursion
+   * @param num_cloudlet Number of cloudlets to be created
+   * @return cloudletList List[cloudlet]
+   */
+  def createCloudlets(num_cloudlet: Int): List[Cloudlet] = {
     val cloudletList = new ListBuffer[Cloudlet];
     cloudletRecursive(num_cloudlet, 0, cloudletList)
     return cloudletList.toList;
   }
 
-  // recursively create a single cloudlet and add it cloudletList
-  def cloudletRecursive(num_cloudlet: Int, cloudlet_id: Int, cloudletList: ListBuffer[Cloudlet]) : Unit = {
+  /** Function that recursively creates one VM
+   * @param num_cloudlet Number of cloudlets to be created
+   * @param cloudlet_id id of current cloudlet
+   * @param cloudletList ListBuffer[Cloudlet]
+   * @return Unit
+   */
+  def cloudletRecursive(num_cloudlet: Int, cloudlet_id: Int, cloudletList: ListBuffer[Cloudlet]): Unit = {
     if (num_cloudlet == 0) {
       return
     }
@@ -176,54 +213,94 @@ object Simulation1 {
     val outputSize = config.getInt("simulation1.cloudlet.outputSize")
     val utilizationRatio = config.getDouble("simulation1.cloudlet.utilizationRatio")
 
-    val utilizationModel : UtilizationModelFull = new UtilizationModelFull()
-    val cloudlet : CloudletSimple = new CloudletSimple(length, PEs, utilizationModel)
+    val utilizationModel: UtilizationModelFull = new UtilizationModelFull()
+    val cloudlet: CloudletSimple = new CloudletSimple(length, PEs, utilizationModel)
     cloudlet
       .setFileSize(fileSize)
       .setOutputSize(outputSize)
       .setId(cloudlet_id)
 
     cloudletList += cloudlet
-    cloudletRecursive(num_cloudlet-1, cloudlet_id+1, cloudletList)
+    cloudletRecursive(num_cloudlet - 1, cloudlet_id + 1, cloudletList)
   }
 
-  def printCost(broker : DatacenterBrokerSimple, dc: List[DatacenterSimple]) : Unit = {
+  /** Set up network to datacenters if isNetwork is true
+   * @param dcList: List[DatacenterSimple]
+   * @param broker0: DatacenterBrokerSimple
+   * @return Unit
+   */
+  def network(dcList: List[DatacenterSimple], broker0: DatacenterBrokerSimple, simulation: CloudSim) : Unit = {
+    dcList.foreach(dc =>
+      setUpNetworkTopology(dc, broker0, simulation)
+    )
+  }
+
+  /** Configure network topology to a single datacenter
+   * @param dc: DatacenterSimple
+   * @param broker0: DatacenterBrokerSimple
+   * @return Unit
+   */
+  def setUpNetworkTopology(dc: DatacenterSimple, broker0: DatacenterBrokerSimple, simulation: CloudSim): Unit = {
+    val bw = config.getDouble("simulation1.network.bw")
+    val latency = config.getDouble("simulation1.network.latency")
+    val networkTopology: NetworkTopology = new BriteNetworkTopology()
+    simulation.setNetworkTopology(networkTopology)
+    networkTopology.addLink(dc, broker0, bw, latency)
+  }
+
+  /** Helper method to print the metrics(cost mainly)
+   * @param broker Current cloudlet id
+   * @param num_dc Number of datacenters
+   * @return Unit
+   */
+  def printCost(broker: DatacenterBrokerSimple, num_dc: Int): Unit = {
     print("\n")
     var totalCost: Double = 0.0
-    var totalNonIdleVMs : Int = 0
+    var totalNonIdleVMs: Int = 0
     var processingTotalCost, memoryTotalCost, storageTotalCost, bwTotalCost = 0.0
-    var vmList : List[VmSimple] = broker.getVmCreatedList().asScala.toList
-    for (vm <- vmList) {
-      val vmCost : VmCost = new VmCost(vm)
-      processingTotalCost += vmCost.getProcessingCost()
-      memoryTotalCost += vmCost.getMemoryCost()
-      storageTotalCost += vmCost.getStorageCost()
-      bwTotalCost += vmCost.getBwCost()
+    var vmList: List[VmSimple] = broker.getVmCreatedList().asScala.toList
+    vmList.foreach(
+      vm => {
+        val vmCost: VmCost = new VmCost(vm)
+        processingTotalCost += vmCost.getProcessingCost()
+        memoryTotalCost += vmCost.getMemoryCost()
+        storageTotalCost += vmCost.getStorageCost()
+        bwTotalCost += vmCost.getBwCost()
 
-      totalCost += vmCost.getTotalCost()
-      if (vm.getTotalExecutionTime() > 0) {
-        totalNonIdleVMs += 1
+        totalCost += vmCost.getTotalCost()
+        if (vm.getTotalExecutionTime() > 0) {
+          totalNonIdleVMs += 1
+        }
+        print(vmCost)
+        print("\n")
       }
-      print(vmCost)
-      print("\n")
-    }
+    )
     print("Total cost ($) for %3d created VMs from %3d in DC %d: %8.2f$ %13.2f$ %17.2f$ %12.2f$ %15.2f$%n".format(
-        totalNonIdleVMs, broker.getVmsNumber(), dc.head.getId(),
-        processingTotalCost, memoryTotalCost, storageTotalCost, bwTotalCost, totalCost))
+      totalNonIdleVMs, broker.getVmsNumber(), num_dc,
+      processingTotalCost, memoryTotalCost, storageTotalCost, bwTotalCost, totalCost))
   }
 
-  def Start() =
+  /** Method to start simulation1
+   * @param isNetwork A boolean representing whether network is needed or not
+   * @return Unit
+   */
+  def Start(isNetwork: Boolean) =
+
     // get basic parameters from config file
     val num_dc = config.getInt("simulation1.dc.num")
     val num_vm = config.getInt("simulation1.vm.num")
     val num_cloudlet = config.getInt("simulation1.cloudlet.num")
-    logger.info("DC: " + num_dc + " | VM: " + num_vm + " | CLOUDLET: " + num_cloudlet )
+    logger.info("DC: " + num_dc + " | VM: " + num_vm + " | CLOUDLET: " + num_cloudlet)
 
     // create broker
-    val broker0 : DatacenterBrokerSimple = new DatacenterBrokerSimple(simulation);
+    val broker0: DatacenterBrokerSimple = new DatacenterBrokerSimple(simulation);
 
     // Get datacenter, vm, cloudlet lists
-    var datacenter0 = createDatacenters(num_dc);
+    var dcList = createDatacenters(num_dc);
+    if (isNetwork) {
+      network(dcList, broker0, simulation)
+    }
+
     val vmList = createVms(num_vm);
     val cloudletList = createCloudlets(num_cloudlet);
 
@@ -239,5 +316,5 @@ object Simulation1 {
     new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
 
     // Print total cost
-    printCost(broker0, datacenter0)
+    printCost(broker0, num_dc)
 }
