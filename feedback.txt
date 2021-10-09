@@ -1,4 +1,4 @@
-Student:
+Student: Anandavignesh Velangadu Sivakumar
 Grader: Vineet Patel
 
 Homework 1
@@ -22,7 +22,7 @@ Grading Criteria:
  - for each used var for heap-based shared variables or mutable collections:
     * multiple vars used (5): -1%
  - for each used while or for or other loops with induction variables to iterate over a collection:
-    * for loops used (4): -0.8%
+    * no loops in main simualtions, but present in code nevertheless: -0.2%, 
  - no instructions in README.md on how to install and run your simulator:
     * instructions present: -0%
  - the program crashes without completing the core functionality:
@@ -30,4 +30,4 @@ Grading Criteria:
  - the documentation exists but it is insufficient to understand your cloud simulation design and models and how you assembled and deployed all components of the cloud:
     * documentation is sufficient: -0%
 
-Total grade: 5.95%
+Total grade: 6.35%
